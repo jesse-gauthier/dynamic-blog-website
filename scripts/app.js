@@ -102,6 +102,8 @@ function initializePage() {
 
   if (pageName === "" || pageName === "index.html") {
     initializeHomePage();
+  } else if (pageName === "new-post.html") {
+    initializeNewPostPage();
   }
   // Other pages will be handled as they are created
 }
@@ -160,6 +162,72 @@ function createPostCard(post) {
     `;
 
   return postCard;
+}
+
+// ========== NEW POST PAGE FUNCTIONS ==========
+
+// Initialize the new post page
+function initializeNewPostPage() {
+  const newPostForm = document.getElementById("new-post-form");
+
+  if (!newPostForm) return; // Not on new post page
+
+  // Add submit event listener to the form
+  newPostForm.addEventListener("submit", handleNewPostSubmit);
+}
+
+// Handle new post form submission
+function handleNewPostSubmit(event) {
+  event.preventDefault();
+
+  // Get form elements
+  const titleInput = document.getElementById("post-title");
+  const contentInput = document.getElementById("post-content");
+  const imageInput = document.getElementById("post-image");
+
+  // Get form values
+  const title = titleInput.value.trim();
+  const content = contentInput.value.trim();
+  const imageUrl = imageInput.value.trim();
+
+  // Validate form
+  let isValid = true;
+
+  // Validate title
+  if (!title) {
+    document.getElementById("title-error").classList.remove("hidden");
+    titleInput.classList.add("border-red-500");
+    isValid = false;
+  } else {
+    document.getElementById("title-error").classList.add("hidden");
+    titleInput.classList.remove("border-red-500");
+  }
+
+  // Validate content
+  if (!content) {
+    document.getElementById("content-error").classList.remove("hidden");
+    contentInput.classList.add("border-red-500");
+    isValid = false;
+  } else {
+    document.getElementById("content-error").classList.add("hidden");
+    contentInput.classList.remove("border-red-500");
+  }
+
+  // If form is valid, save the post
+  if (isValid) {
+    // Create new post object
+    const newPost = {
+      title: title,
+      content: content,
+      imageUrl: imageUrl,
+    };
+
+    // Save the post
+    const savedPost = savePost(newPost);
+
+    // Redirect to the homepage
+    window.location.href = "index.html";
+  }
 }
 
 // Initialize the page when DOM content is loaded
