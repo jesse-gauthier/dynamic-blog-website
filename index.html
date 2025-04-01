@@ -3,10 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <title>Home Page</title>
+    <title>My Dynamic Blog</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <header class="bg-gray-800 text-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-2xl font-bold mb-4 md:mb-0">My Dynamic Blog</h1>
+            <nav>
+                <ul class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0">
+                    <li class="md:mr-6"><a href="index.html" class="bg-gray-700 px-4 py-2 rounded hover:bg-gray-600 transition">Home</a></li>
+                    <li><a href="new-post.html" class="bg-green-600 px-4 py-2 rounded hover:bg-green-500 transition">Create New Post</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Welcome to My Blog</h2>
+            <p class="text-gray-600">This is a dynamic blog website where you can read, create, edit, and delete posts.</p>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Latest Posts</h2>
+            <div id="posts-container">
+                <!-- Blog posts will be dynamically added here -->
+                <div id="no-posts-message" class="bg-white rounded-lg shadow-md p-8 text-center">
+                    <p class="text-gray-500 text-lg mb-4">No posts available. Create your first blog post!</p>
+                    <a href="new-post.html" class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Create New Post</a>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="./scripts/app.js"></script>
 </body>
 </html>
