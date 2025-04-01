@@ -91,6 +91,14 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString("en-US", options);
 }
 
+// ========== HELPER FUNCTIONS ==========
+
+// Get URL parameter by name
+function getUrlParameter(name) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(name);
+}
+
 // ========== PAGE SPECIFIC FUNCTIONS ==========
 
 // Check which page we're on
@@ -104,8 +112,9 @@ function initializePage() {
     initializeHomePage();
   } else if (pageName === "new-post.html") {
     initializeNewPostPage();
+  } else if (pageName === "post.html") {
+    initializePostPage();
   }
-  // Other pages will be handled as they are created
 }
 
 // ========== HOME PAGE FUNCTIONS ==========
@@ -228,6 +237,202 @@ function handleNewPostSubmit(event) {
     // Redirect to the homepage
     window.location.href = "index.html";
   }
+}
+
+// ========== POST PAGE FUNCTIONS ==========
+
+// Initialize the post page
+function initializePostPage() {
+  // Get post ID from URL
+  const postId = getUrlParameter("id");
+
+  if (!postId) {
+    // No post ID provided, redirect to home
+    window.location.href = "index.html";
+    return;
+  }
+
+  // Get the post from storage
+  const post = getPost(postId);
+
+  if (!post) {
+    // Post not found, show error message
+    document.getElementById("post-not-found").classList.remove("hidden");
+    document.getElementById("post-content-container").classList.add("hidden");
+    return;
+  }
+
+  // Display the post
+  displayPost(post);
+
+  // Set up event listeners for actions
+  setupPostPageActions(post);
+}
+
+// Display a post on the post page
+function displayPost(post) {
+  // Set the page title
+  document.title = `${post.title} - My Dynamic Blog`;
+
+  // Set the post content
+  document.getElementById("post-title-display").textContent = post.title;
+  document.getElementById("post-date-display").textContent = formatDate(
+    post.date
+  );
+  document.getElementById("post-content-display").textContent = post.content;
+
+  // Handle post image if it exists
+  if (post.imageUrl && post.imageUrl.trim() !== "") {
+    const imageContainer = document.getElementById("post-image-container");
+    const imageElement = document.getElementById("post-image-display");
+
+    imageElement.src = post.imageUrl;
+    imageElement.alt = post.title;
+    imageContainer.classList.remove("hidden");
+  }
+}
+
+// Set up post page event listeners
+function setupPostPageActions(post) {
+  // Edit button
+  const editButton = document.getElementById("edit-post-btn");
+  if (editButton) {
+    editButton.addEventListener("click", () => {
+      showEditMode(post);
+    });
+  }
+
+  // Delete button
+  const deleteButton = document.getElementById("delete-post-btn");
+  if (deleteButton) {
+    deleteButton.addEventListener("click", () => {
+      showDeleteConfirmation(post.id);
+    });
+  }
+
+  // Edit form
+  const editForm = document.getElementById("edit-post-form");
+  if (editForm) {
+    editForm.addEventListener("submit", (event) => {
+      handleEditFormSubmit(event, post.id);
+    });
+  }
+
+  // Cancel edit button
+  const cancelEditButton = document.getElementById("cancel-edit-btn");
+  if (cancelEditButton) {
+    cancelEditButton.addEventListener("click", () => {
+      hideEditMode();
+    });
+  }
+
+  // Delete confirmation buttons
+  const cancelDeleteButton = document.getElementById("cancel-delete-btn");
+  if (cancelDeleteButton) {
+    cancelDeleteButton.addEventListener("click", hideDeleteConfirmation);
+  }
+
+  const confirmDeleteButton = document.getElementById("confirm-delete-btn");
+  if (confirmDeleteButton) {
+    confirmDeleteButton.addEventListener("click", () => {
+      handleDeletePost(post.id);
+    });
+  }
+}
+
+// Show edit mode for a post
+function showEditMode(post) {
+  // Hide view section and show edit section
+  document.getElementById("view-post-section").classList.add("hidden");
+  document.getElementById("edit-post-section").classList.remove("hidden");
+
+  // Populate form fields with post data
+  document.getElementById("edit-post-title").value = post.title;
+  document.getElementById("edit-post-content").value = post.content;
+  document.getElementById("edit-post-image").value = post.imageUrl || "";
+}
+
+// Hide edit mode and return to view mode
+function hideEditMode() {
+  document.getElementById("edit-post-section").classList.add("hidden");
+  document.getElementById("view-post-section").classList.remove("hidden");
+}
+
+// Handle edit form submission
+function handleEditFormSubmit(event, postId) {
+  event.preventDefault();
+
+  // Get form elements
+  const titleInput = document.getElementById("edit-post-title");
+  const contentInput = document.getElementById("edit-post-content");
+  const imageInput = document.getElementById("edit-post-image");
+
+  // Get form values
+  const title = titleInput.value.trim();
+  const content = contentInput.value.trim();
+  const imageUrl = imageInput.value.trim();
+
+  // Validate form
+  let isValid = true;
+
+  // Validate title
+  if (!title) {
+    document.getElementById("edit-title-error").classList.remove("hidden");
+    titleInput.classList.add("border-red-500");
+    isValid = false;
+  } else {
+    document.getElementById("edit-title-error").classList.add("hidden");
+    titleInput.classList.remove("border-red-500");
+  }
+
+  // Validate content
+  if (!content) {
+    document.getElementById("edit-content-error").classList.remove("hidden");
+    contentInput.classList.add("border-red-500");
+    isValid = false;
+  } else {
+    document.getElementById("edit-content-error").classList.add("hidden");
+    contentInput.classList.remove("border-red-500");
+  }
+
+  // If form is valid, update the post
+  if (isValid) {
+    // Create updated post object
+    const updatedPost = {
+      title: title,
+      content: content,
+      imageUrl: imageUrl,
+    };
+
+    // Update the post
+    const success = updatePost(postId, updatedPost);
+
+    if (success) {
+      // Reload the page to show updated post
+      window.location.reload();
+    }
+  }
+}
+
+// Show delete confirmation modal
+function showDeleteConfirmation(postId) {
+  const deleteModal = document.getElementById("delete-modal");
+  deleteModal.classList.remove("hidden");
+}
+
+// Hide delete confirmation modal
+function hideDeleteConfirmation() {
+  const deleteModal = document.getElementById("delete-modal");
+  deleteModal.classList.add("hidden");
+}
+
+// Handle post deletion
+function handleDeletePost(postId) {
+  // Delete the post
+  deletePost(postId);
+
+  // Redirect to the homepage
+  window.location.href = "index.html";
 }
 
 // Initialize the page when DOM content is loaded
